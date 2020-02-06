@@ -2,43 +2,87 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Getting Started: Serving Web Content</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*" />
     <link rel="stylesheet" href="/css/bootstrap.min.css">
-    <script src="/css/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/css/community.css" type="text/css" charset="utf-8">
+    <script src="/js/MapAPI.js"></script>
+    <script src="/js/jquery-3.4.1.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script type="application/javascript">
+        window.onload = function () {
+            var comment_login = window.localStorage.getItem("comment_login");
+            //从community.js获取传进来的标识，如果是，则加载登录后销毁
+            if (comment_login == "true") {
+                window.open('','_self','');
+                window.close();
+                window.localStorage.removeItem("comment_login");
+            }
+        }
+    </script>
 </head>
 <body>
-<nav class="navbar navbar-default">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                <span class="sr-only">社区</span>
-            </button>
-            <a class="navbar-brand" href="#">麻将笔记</a>
-        </div>
-
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <form class="navbar-form navbar-left">
-                <div class="form-group">
-                    <input type="text" class="form-control" placeholder="搜索问题">
+<div th:insert="~{head :: nav}"></div>
+<div class="container-fluid main">
+    <div class="row">
+        <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12">
+            <h2><span class="glyphicon glyphicon-list" aria-hidden="true"></span> 发布</h2>
+            <hr>
+            <div class="media" th:each="q:${pagenation.questionDTO}">
+                <div class="media-left">
+                    <a href="#">
+                        <img class="img-circle media-object" th:src="${q.user.getAvatarUrl()}">
+                    </a>
                 </div>
-                <button type="submit" class="btn btn-default">搜索</button>
-            </form>
-            <ul class="nav navbar-nav navbar-right">
-                <li class="dropdown" th:if="${session.user!=null}">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                       aria-expanded="false" th:text="${session.user.getName()}"> <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">消息中心</a></li>
-                        <li><a href="#">个人资料</a></li>
-                        <li><a href="#">退出登录</a></li>
-                    </ul>
-                </li>
-                <li><a th:unless="${session.user!=null}"
-                       href="https://github.com/login/oauth/authorize?client_id=6015b3d95e62ffc703e4&redirect_uri=http://localhost:8080/callback&scope=user&state=1">登录</a></li>
+                <div class="media-body">
+                    <h4 class="media-heading"><a th:href="@{'question/'+${q.id}}" th:text="${q.getTitle()}"></a></h4>
+                    <span th:text="${q.getDescription()}"></span><br>
+                    <span class="test-desc">
+                        <span th:text="${q.getCommentCount()}"></span>个评论
+                        <span th:text="${q.getViewCount()}"></span>个浏览
+                        <span th:text="${q.getLikeCount()}"></span>个关注
+                        <span th:text="${#dates.format(q.getGmtCreate(),'dd MMMM yyyy')}"></span>
+                   </span>
+                </div>
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li>
+                        <a th:if="${pagenation.showfirst==true}" th:href="@{/(page=1)}">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:if="${pagenation.showprevious==true}" th:href="@{/(page=${pagenation.page}-1)}"
+                           aria-label="Previous">
+                            <span aria-hidden="true">&lt;</span>
+                        </a>
+                    </li>
+                    <li th:each="page:${pagenation.pages}" th:class="${pagenation.page==page}?'active':''"><a
+                            th:href="@{/(page=${page})}" th:text="${page}"></a></li>
+                    <li>
+                        <a th:if="${pagenation.shownext==true}" th:href="@{/(page=${pagenation.page}+1)}"
+                           aria-label="Next">
+                            <span aria-hidden="true">&gt;</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:if="${pagenation.showend==true}" th:href="@{/(page=${pagenation.totalpage})}">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
+            <ul class="list-group">
+                <li class="list-group-item">免费域名注册</li>
+                <li class="list-group-item">免费 Window 空间托管</li>
+                <li class="list-group-item"><a onclick="api()">获取地址</a></li>
             </ul>
         </div>
     </div>
-</nav>
+</div>
 </body>
 </html>

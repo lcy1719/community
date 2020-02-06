@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${question_detail.title}"></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+    <script src="/js/jquery-3.4.1.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/css/community.css" type="text/css" charset="utf-8">
+    <script src="/js/community.js"></script>
+
+</head>
+<body>
+<div th:insert="~{head :: nav}"></div>
+<!--正文-->
+<div class="container-fluid main">
+    <div class="row">
+        <!--左边主要内容-->
+        <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12">
+            <!--正文-->
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <h4 class="question-title"><span th:text="${question_detail.title}"></span></h4>
+                <span class="test-desc">
+                作者：<span th:text="${question_detail.user.name}"></span> |
+                发布时间：<span th:text="${#dates.format(question_detail.gmtCreate,'yyyy-MM-dd HH:mm')}"></span> |
+                阅读数： <span th:text="${question_detail.viewCount}"></span>
+            </span>
+                <hr>
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" th:text="${question_detail.description}">
+                </div>
+                <hr class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <a class="community-menu" th:href="@{'/publish/'+${question_detail.id}}">
+                    <span class="glyphicon glyphicon-pencil "></span>编辑
+                </a>
+            </div>
+            <!--回复-->
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <h4>
+                    <span th:text="${question_detail.commentCount}"></span> 个回复
+                </h4>
+                <hr class="col-lg-12 col-md-12 col-sm-12 col-xs-12 comment-sp">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 comments" th:each="comment : ${commentDTOS}">
+                    <div class="media">
+                        <div class="media-left">
+                            <a href="#">
+                                <img class="media-object img-rounded"
+                                     th:src="${comment.user.avatarUrl}">
+                            </a>
+                        </div>
+                        <div class="media-body" th:id="${'comment-body-'+comment.id}">
+                            <h5 class="media-heading">
+                                <span th:text="${comment.user.name}"></span>
+                            </h5>
+                            <div th:text="${comment.content}"></div>
+                            <div class="menu">
+                                <span class="glyphicon glyphicon-thumbs-up icon"></span>
+                                <span class="glyphicon glyphicon-comment icon" th:data-id="${comment.id}"
+                                      onclick="collapseComments(this)"></span>
+                                <span class="pull-right"
+                                      th:text="${#dates.format(comment.gmtCreate,'yyyy-MM-dd')}"></span>
+                            </div>
+                            <!--二级评论-->
+                            <div th:id="${'child-'+comment.id}" style="display: none">
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 sub-comments">
+                                    <!--二级评论内容-->
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 comments" th:each="comment : ${commentDTOS}">
+                                        <div class="media">
+                                            <div class="media-left">
+                                                <a href="#">
+                                                    <img class="media-object img-rounded"
+                                                         th:src="${comment.user.avatarUrl}">
+                                                </a>
+                                            </div>
+                                            <div class="media-body" th:id="${'comment-body-'+comment.id}">
+                                                <h5 class="media-heading">
+                                                    <span th:text="${comment.user.name}"></span>
+                                                </h5>
+                                                <div th:text="${comment.content}"></div>
+                                                <div class="menu">
+                                                    <span class="glyphicon glyphicon-thumbs-up icon"></span>
+                                                    <span class="glyphicon glyphicon-comment icon"
+                                                          th:data-id="${comment.id}"></span>
+                                                    <span class="pull-right"
+                                                          th:text="${#dates.format(comment.gmtCreate,'yyyy-MM-dd')}"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--二级评论的回复-->
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                        <input type="text" class="form-control" th:id="${'childComment'+comment.id}" placeholder="评论一下吧">
+                                        <button type="button" class="btn btn-success btn-comment" id="childType" onclick="post_child()">回复
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--回复框-->
+            <h4>
+                <span></span>回复
+            </h4>
+            <hr class="col-lg-12 col-md-12 col-sm-12 col-xs-12 comment-sp">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="comment_section">
+                <div class="media">
+                    <div class="media-left">
+                        <a href="#">
+                            <img class="media-object img-rounded" th:src="${question_detail.getUser().avatarUrl}">
+                        </a>
+                    </div>
+                    <div class="media-body">
+                        <h5 class="media-heding">
+                            <span th:text="${question_detail.user.name}"></span>
+                        </h5>
+                    </div>
+                </div>
+                <input type="hidden" id="parentId" th:value="${question_detail.id}">
+                <textarea class="form-control comment" id="commentContain" rows="6"></textarea>
+                <button type="button" class="btn btn-success btn-comment" id="type" value="1" onclick="post_parent()">回复
+                </button>
+            </div>
+        </div>
+        <!--右边框-->
+        <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <h4>发起人</h4>
+                <div class="media">
+                    <div class="media-left">
+                        <a href="#">
+                            <img class="img-circle media-object" th:src="${question_detail.user.getAvatarUrl()}">
+                        </a>
+                    </div>
+                    <div class="media-body">
+                        <span><a href="#" th:text="${question_detail.user.name}"></a></span>
+                    </div>
+                </div>
+            </div>
+            <hr class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <h4>相关问题</h4>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

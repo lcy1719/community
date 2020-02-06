@@ -5,6 +5,8 @@ import life.majiang.community.dto.GithubUser;
 import life.majiang.community.mapper.UserMapper;
 import life.majiang.community.model.User;
 import life.majiang.community.provider.GitHubProvider;
+import life.majiang.community.service.QuestionService;
+import life.majiang.community.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -22,7 +24,10 @@ import java.util.UUID;
 public class AuthorizeController {
     @Autowired
     private GitHubProvider gitHubProvider;
-
+    @Autowired
+    private QuestionService questionService;
+    @Autowired
+    private UserService userService;
     @Value("${github.client.id}")
     private String client_id;
     @Value("${github.client.secret}")
@@ -32,10 +37,11 @@ public class AuthorizeController {
 
     @Autowired
     private UserMapper userMapper;
+
     @GetMapping("/callback")
     public String call(@RequestParam(name = "code") String code,
-                       @RequestParam(name= "state") String state,
-                       HttpServletRequest request, HttpServletResponse response){
+                       @RequestParam(name = "state") String state,
+                        HttpServletResponse response) {
         AccessTokenDTO accessTokenDTO = new AccessTokenDTO();
 
         accessTokenDTO.setClient_id(client_id);
@@ -46,23 +52,31 @@ public class AuthorizeController {
 
         String accessToken = gitHubProvider.getAccessToken(accessTokenDTO);
         GithubUser getuser = gitHubProvider.Getuser(accessToken);
-        if(getuser!=null){
+        if (getuser != null && getuser.getId() != null) {
             //登录成功
-            User user=new User();
-
-            String token= UUID.randomUUID().toString();
+            User user = new User();
+            String token = UUID.randomUUID().toString();
             user.setToken(token);
-            user.setAccount_id(String.valueOf(getuser.getId()));
+            user.setAccountId(getuser.getId().toString());
             user.setName(getuser.getName());
-            user.setGmt_create(System.currentTimeMillis());
-            user.setGmt_modified(user.getGmt_create());
-
-            userMapper.insert(user);
-            response.addCookie(new Cookie("token",token));//登录成功添加一个标识(cookie)
+           // user.setId(Integer.parseInt(String.valueOf(getuser.getId())));
+            user.setAvatarUrl(getuser.getAvatar_url());
+            userService.findByid(user);
+            response.addCookie(new Cookie("token", token));//登录成功添加一个标识(cookie)
             return "redirect:/";
-        }else{
+        } else {
             //登录失败
             return "redirect:/";
         }
+    }
+
+    @GetMapping("/lougout")
+    public String lougout(HttpServletRequest request,HttpServletResponse response) {
+        request.getSession().removeAttribute("user");
+        Cookie cookie = new Cookie("token",null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        return "redirect:/";
     }
 }

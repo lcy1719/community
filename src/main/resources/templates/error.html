@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/css/community.css" type="text/css" charset="utf-8">
+    <script src="/js/jquery-3.4.1.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div th:insert="~{head :: nav}"></div>
+<div class="container-fluid main">
+    <div class="row">
+        <div class="jumbotron">
+            <h1>出错了</h1>
+            <p th:text="${message}"></p>
+            <p><a class="btn btn-primary btn-lg" href="/" role="button">回到主页</a></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
